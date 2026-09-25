@@ -8,7 +8,8 @@ import android.os.Build
 
 /**
  * One alarm chain: an exact alarm at every buzz time (:00, :05, ...). Each
- * alarm either buzzes or, on the hour, shows a picture, then sets the next one.
+ * alarm either buzzes (with a dhikr) or, on the hour, shows a dua or verse, then
+ * sets the next one.
  *
  * setAlarmClock() is used because it is the only alarm type Android lets fire
  * every few minutes while the watch is asleep (it shows as the "next alarm").

@@ -24,7 +24,7 @@ class MainActivity : Activity(), ActionHost {
 
     private lateinit var toggle: Button
     private lateinit var nextBuzz: TextView
-    private lateinit var nextPicture: TextView
+    private lateinit var nextCard: TextView
     private lateinit var warning: TextView
     private val handler = Handler(Looper.getMainLooper())
     private val ticker = object : Runnable {
@@ -41,10 +41,10 @@ class MainActivity : Activity(), ActionHost {
 
         toggle = findViewById(R.id.toggle)
         nextBuzz = findViewById(R.id.next_buzz)
-        nextPicture = findViewById(R.id.next_picture)
+        nextCard = findViewById(R.id.next_card)
         warning = findViewById(R.id.warning)
         toggle.setOnClickListener { perform(Action.TOGGLE) }
-        findViewById<View>(R.id.show_picture).setOnClickListener { perform(Action.SHOW_IMAGE) }
+        findViewById<View>(R.id.show_card).setOnClickListener { perform(Action.SHOW_CARD) }
         warning.setOnClickListener { fixPermission() }
         findViewById<View>(R.id.test_badge).visibility =
             if (Config.TEST_MODE) View.VISIBLE else View.GONE
@@ -57,13 +57,13 @@ class MainActivity : Activity(), ActionHost {
 
     override fun onResume() {
         super.onResume()
-        Pictures.visibleScreens++
+        Cards.visibleScreens++
         if (State(this).enabled) Scheduler.start(this) // e.g. after granting a permission
         handler.post(ticker)
     }
 
     override fun onPause() {
-        Pictures.visibleScreens--
+        Cards.visibleScreens--
         handler.removeCallbacks(ticker)
         super.onPause()
     }
@@ -74,7 +74,8 @@ class MainActivity : Activity(), ActionHost {
                 Scheduler.setEnabled(this, !State(this).enabled)
                 updateUi()
             }
-            Action.SHOW_IMAGE, Action.NEXT_IMAGE, Action.PREV_IMAGE -> Pictures.open(this)
+            Action.SHOW_CARD, Action.NEXT_CARD, Action.PREV_CARD,
+            Action.SCROLL_OR_NEXT, Action.SCROLL_OR_PREV -> Cards.open(this)
             Action.CLOSE -> finish()
         }
         return true
@@ -102,11 +103,11 @@ class MainActivity : Activity(), ActionHost {
         if (enabled) {
             nextBuzz.text = Schedule.formatCountdown(Schedule.nextAligned(now, Schedule.tickMs) - now)
             val style = if (Config.TEST_MODE) DateFormat.MEDIUM else DateFormat.SHORT
-            nextPicture.text = DateFormat.getTimeInstance(style)
-                .format(Date(Schedule.nextAligned(now, Schedule.imageMs)))
+            nextCard.text = DateFormat.getTimeInstance(style)
+                .format(Date(Schedule.nextAligned(now, Schedule.cardMs)))
         } else {
             nextBuzz.text = "–"
-            nextPicture.text = "–"
+            nextCard.text = "–"
         }
         val problem = permissionProblem()
         warning.visibility = if (problem == null) View.GONE else View.VISIBLE

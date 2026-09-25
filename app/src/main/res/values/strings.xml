@@ -4,15 +4,12 @@
     <string name="on">ON</string>
     <string name="off">OFF</string>
     <string name="next_buzz">Next buzz</string>
-    <string name="next_picture">Next picture</string>
-    <string name="show_picture">Show picture</string>
+    <string name="next_card">Dua / verse at</string>
+    <string name="show_card">Show dua / verse</string>
     <string name="test_mode">TEST MODE</string>
-    <string name="picture_time">Picture time</string>
-    <string name="picture_of">%1$d / %2$d</string>
-    <string name="channel_pictures">Hourly pictures</string>
-    <string name="loading">Loading…</string>
-    <string name="load_failed">Couldn\'t load the picture. Check the watch\'s connection.</string>
+    <string name="channel_cards">Hourly duas and verses</string>
+    <string name="channel_dhikr">Dhikr every 5 minutes</string>
     <string name="need_alarms">Tap to allow alarms so the watch can buzz on time</string>
-    <string name="need_notifications">Tap to allow notifications so pictures can appear</string>
-    <string name="need_full_screen">Tap to allow full-screen pictures</string>
+    <string name="need_notifications">Tap to allow notifications so the dhikr and duas can appear</string>
+    <string name="need_full_screen">Tap to allow full-screen display</string>
 </resources>

@@ -3,29 +3,51 @@
 A Wear OS app for the Samsung Galaxy Watch 7 (and any Wear OS 3+ watch: Galaxy Watch 4 and
 newer, Pixel Watch, …). It:
 
-- **vibrates every 5 minutes** (on the clock: :00, :05, :10 …), also when the screen is off
-- **shows a picture every hour** (on the hour) from your list of image URLs, in order and
-  wrapping around. The screen turns on to show it.
+- **vibrates every 5 minutes** (on the clock: :00, :05, :10 …) and shows a **dhikr** on screen
+  for a few seconds: سبحان الله, الحمد لله, لا إله إلا الله, الله أكبر, أستغفر الله …
+- **every hour** (on the hour) shows a full‑screen **dua or Quran verse** in Arabic:
+  - odd hours: a Quran verse (36 well‑known verses and Quranic duas: آية الكرسي, الإخلاص,
+    المعوذتين, الفاتحة, …)
+  - even hours: أذكار الصباح (05:00–11:59), أذكار المساء (16:00–20:59), other hours general
+    duas and adhkar from Hisn al‑Muslim (146 in total)
 
-## Setting your pictures and timing
+  Each collection goes in order and starts again at the end, so everything is shown before
+  anything repeats.
 
-Edit **`app/src/main/java/com/whatchapp/hourlybuzz/Config.kt`**. It's the only file you normally
-need to change.
+Everything is built into the app, so it works offline and nothing is downloaded on the watch.
+
+## Where the text comes from
+
+None of the Arabic text was typed by hand. `tools/build_content.py` copies it word for word
+from published sources into `app/src/main/assets/content.json`:
+
+- **Quran:** the Uthmani text from [QuranEnc](https://quranenc.com) (The Noble Qur'an
+  Encyclopedia), via the [`quran-json`](https://github.com/risan/quran-json) package (CC BY 4.0).
+- **Duas, adhkar and dhikr:** Hisn al‑Muslim (حصن المسلم), via the
+  [`azkar`](https://www.npmjs.com/package/azkar) package (CC BY‑NC‑ND 4.0: personal,
+  non‑commercial use, text unchanged). Each 5‑minute dhikr phrase is checked to appear exactly
+  in this collection.
+
+The Arabic font is [Amiri](https://www.amirifont.org) (SIL Open Font License 1.1). See
+`CREDITS.md`.
+
+To change which verses or dua categories appear, edit the lists at the top of
+`tools/build_content.py` and run `python3 tools/build_content.py` (needs Python 3 and npm).
+
+## Settings
+
+Edit **`app/src/main/java/com/whatchapp/hourlybuzz/Config.kt`**:
 
 ```kotlin
-val IMAGE_URLS = listOf(
-    "https://example.com/photo1.jpg",
-    "https://example.com/photo2.png",
-)
 const val VIBRATE_EVERY_MINUTES = 5
-const val IMAGE_EVERY_MINUTES = 60
+const val CARD_EVERY_MINUTES = 60
+const val SHOW_DHIKR = true          // false = buzz only, no dhikr on screen
+const val DHIKR_SHOW_SECONDS = 8     // how long the dhikr stays on screen
+val MORNING_HOURS = 5..11
+val EVENING_HOURS = 16..20
 ```
 
-Pictures download over the watch's connection (via the phone, Wi‑Fi or LTE). The next picture
-is downloaded 5 minutes early (`PRELOAD_MINUTES`) so it appears instantly. Square pictures of
-about 480×480 look best.
-
-Set `TEST_MODE = true` to buzz every 20 seconds and show a picture every minute while you try it
+Set `TEST_MODE = true` to buzz every 20 seconds and show a card every minute while you try it
 out.
 
 ## Using it on the watch
@@ -33,17 +55,18 @@ out.
 | Where | Input | What it does |
 |---|---|---|
 | Main screen | Tap **ON/OFF** | Start/stop the reminders |
-| Main screen | **Show picture**, or turn the bezel clockwise | Open the latest picture |
+| Main screen | **Show dua / verse**, or turn the bezel clockwise | Open the latest card |
 | Main screen | **Back** button / swipe right | Close the app; the reminders keep running |
-| Picture | Turn the **bezel** clockwise / counter‑clockwise | Next / previous picture |
-| Picture | **Swipe** left / right | Next / previous picture |
-| Picture | **Tap** or **Back** | Close the picture |
+| Dua / verse | Turn the **bezel** | Scroll a long text; at the end, go to the next / previous card |
+| Dua / verse | **Swipe** left / right | Next / previous card |
+| Dua / verse | **Tap** or **Back** | Close |
+| Dhikr | **Tap** or **Back** | Close early (it also closes by itself) |
 
 The Galaxy Watch 7's touch bezel (swipe around the edge of the screen) and the Classic's rotating
-bezel both work. If the pictures move the wrong way when you turn it, set
+bezel both work. If the cards move the wrong way when you turn it, set
 `BEZEL_REVERSED = true`.
 
-When you first open the app, allow **notifications**. The hourly picture is delivered through a
+When you first open the app, allow **notifications**. The dhikr and the hourly card are shown through a
 full-screen notification. If a yellow banner appears on the main screen, tap it and allow the
 setting it opens.
 
@@ -53,7 +76,7 @@ The code is split so new features slot in without rewiring anything:
 
 - **Sounds**: each alert kind in `Config.ALERTS` can play a sound. A chime is included:
   ```kotlin
-  AlertKind.IMAGE to AlertSettings(vibrate = longArrayOf(500), sound = Sound.Raw(R.raw.chime)),
+  AlertKind.CARD to AlertSettings(vibrate = longArrayOf(500), sound = Sound.Raw(R.raw.chime)),
   ```
   Put more sound files in `app/src/main/res/raw/`, or use `Sound.Url("https://…")`.
 - **Do Not Disturb**: by default buzzes and sounds behave like an alarm, so they come through in
@@ -61,16 +84,16 @@ The code is split so new features slot in without rewiring anything:
   those modes.
 - **New alert types**: write an `AlertHandler` in `Alerts.kt` and add it to `Alerts.handlers`.
 - **Remapping gestures**: change `Config.GESTURES`. Each input (`Gesture`) maps to an `Action`
-  (`TOGGLE`, `SHOW_IMAGE`, `NEXT_IMAGE`, `PREV_IMAGE`, `CLOSE`).
+  (`TOGGLE`, `SHOW_CARD`, `NEXT_CARD`, `PREV_CARD`, `SCROLL_OR_NEXT`, `SCROLL_OR_PREV`, `CLOSE`).
 - **New gestures**: add a value to `Gesture` in `Gestures.kt`, detect it, and call
   `Gestures.handle(host, Gesture.YOUR_GESTURE)`. Wear OS wrist flicks (`WRIST_FLICK_OUT/IN`) are
   already wired up for watches that support them.
-- **New actions**: add a value to `Action` and handle it in `perform()` in `MainActivity` and
-  `ImageActivity`.
+- **New actions**: add a value to `Action` and handle it in `perform()` in `MainActivity`,
+  `CardActivity` and `DhikrActivity`.
 
 About Samsung's own gestures: Samsung doesn't let apps use its "double pinch" and "knock knock"
 gestures, and One UI doesn't send Google's wrist-flick gestures to apps. Raising your wrist
-turns the screen on by itself, so a picture that is still open is visible again.
+turns the screen on by itself, so a card that is still open is visible again.
 
 ## Getting the app onto your watch
 
@@ -114,8 +137,9 @@ wireless debugging connection.
 - **The alarm icon**: the app uses Android's "alarm clock" alarms. They are the only kind
   allowed to fire every 5 minutes while the watch sleeps. As a result, the watch may show the
   next buzz as an upcoming alarm.
-- **Battery**: the watch sleeps between buzzes, so battery use is modest. Downloading pictures
-  and turning the screen on every hour costs a little more.
+- **Battery**: the watch sleeps between buzzes, but turning the screen on for the dhikr every
+  5 minutes uses noticeably more battery than buzzing alone. If the battery doesn't last the day,
+  set `SHOW_DHIKR = false` (buzz only) or a shorter `DHIKR_SHOW_SECONDS`.
 - **Survives restarts**: the schedule restarts after the watch reboots or the app is updated.
   **Force stop** cancels it until you open the app again.
 
@@ -123,17 +147,20 @@ wireless debugging connection.
 
 ```
 app/src/main/java/com/whatchapp/hourlybuzz/
-  Config.kt         Your settings (pictures, timing, alerts, gestures)
+  Config.kt         Your settings (timing, dhikr, alerts, gestures)
+  Content.kt        Loads the dhikr/duas/verses; picks which collection each hour uses
   Schedule.kt       Clock maths (unit-tested)
   Scheduler.kt      Sets the exact alarm for the next buzz
-  AlarmReceiver.kt  Runs at each buzz time: buzz, or show the picture on the hour
+  AlarmReceiver.kt  Runs at each buzz time: buzz + dhikr, or a dua/verse on the hour
   BootReceiver.kt   Restarts the schedule after reboot / update / clock change
   Alerts.kt         Alert handlers: vibrate, sound
-  Pictures.kt       Picture rotation + full-screen notification
-  ImageCache.kt     Downloads and caches pictures
+  Cards.kt          Puts the dhikr and the cards on screen (full-screen notification)
   Gestures.kt       Bezel, swipe, tap, Back, wrist flick → actions
   MainActivity.kt   Main screen
-  ImageActivity.kt  Full-screen picture
+  CardActivity.kt   Full-screen dua / verse
+  DhikrActivity.kt  The dhikr shown with each buzz
+app/src/main/assets/content.json Arabic text (generated by tools/build_content.py)
+app/src/main/res/font/amiri.ttf  Arabic font
 app/src/main/res/raw/chime.wav   Sample sound
 app/src/test/                    Unit tests (./gradlew testDebugUnitTest)
 .github/workflows/build.yml      Builds the APK on GitHub

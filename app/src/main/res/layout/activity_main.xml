@@ -73,12 +73,12 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="@string/next_picture"
+                android:text="@string/next_card"
                 android:textColor="#AAAAAA"
                 android:textSize="14sp" />
 
             <TextView
-                android:id="@+id/next_picture"
+                android:id="@+id/next_card"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textColor="#FFFFFF"
@@ -86,13 +86,13 @@
         </LinearLayout>
 
         <TextView
-            android:id="@+id/show_picture"
+            android:id="@+id/show_card"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="6dp"
             android:background="?android:attr/selectableItemBackground"
             android:padding="6dp"
-            android:text="@string/show_picture"
+            android:text="@string/show_card"
             android:textColor="#9AD0FF"
             android:textSize="14sp" />
 

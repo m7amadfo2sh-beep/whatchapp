@@ -7,7 +7,7 @@ import android.content.Context
 import android.view.InputDevice
 import kotlin.math.abs
 
-enum class Screen { MAIN, IMAGE, ANYWHERE }
+enum class Screen { MAIN, CARD, DHIKR, ANYWHERE }
 
 /** Watch inputs. To support a new one, detect it and call [Gestures.handle]. */
 enum class Gesture {
@@ -25,9 +25,12 @@ enum class Gesture {
 /** Things a gesture or button can do. Each screen implements the ones that make sense there. */
 enum class Action {
     TOGGLE,
-    SHOW_IMAGE,
-    NEXT_IMAGE,
-    PREV_IMAGE,
+    SHOW_CARD,
+    NEXT_CARD,
+    PREV_CARD,
+    /** Scroll a long card; at the end, go to the next/previous card. */
+    SCROLL_OR_NEXT,
+    SCROLL_OR_PREV,
     CLOSE,
 }
 

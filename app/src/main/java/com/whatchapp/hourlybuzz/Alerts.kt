@@ -11,7 +11,7 @@ import android.os.Vibrator
 import android.os.VibratorManager
 import android.util.Log
 
-enum class AlertKind { TICK, IMAGE }
+enum class AlertKind { TICK, CARD }
 
 sealed class Sound {
     /** A file bundled in app/src/main/res/raw, e.g. Sound.Raw(R.raw.chime). */

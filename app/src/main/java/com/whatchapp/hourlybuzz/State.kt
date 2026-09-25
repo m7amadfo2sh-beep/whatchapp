@@ -11,13 +11,23 @@ class State(context: Context) {
         get() = prefs.getBoolean("enabled", true)
         set(value) = prefs.edit().putBoolean("enabled", value).apply()
 
-    /** Index of the picture shown at the next picture time. */
-    var nextIndex: Int
-        get() = prefs.getInt("nextIndex", 0)
-        set(value) = prefs.edit().putInt("nextIndex", value).apply()
+    /** Position in the dhikr rotation. */
+    var dhikrIndex: Int
+        get() = prefs.getInt("dhikrIndex", 0)
+        set(value) = prefs.edit().putInt("dhikrIndex", value).apply()
 
-    /** Index of the most recently shown picture, or -1 if none yet. */
-    var lastShownIndex: Int
-        get() = prefs.getInt("lastShownIndex", -1)
-        set(value) = prefs.edit().putInt("lastShownIndex", value).apply()
+    /** Position in each card collection's rotation. */
+    fun poolIndex(pool: Pool): Int = prefs.getInt("pool_${pool.name}", 0)
+
+    fun setPoolIndex(pool: Pool, value: Int) =
+        prefs.edit().putInt("pool_${pool.name}", value).apply()
+
+    /** The most recently shown card, so it can be opened again. */
+    var lastPool: Pool?
+        get() = prefs.getString("lastPool", null)?.let { name -> Pool.entries.find { it.name == name } }
+        set(value) = prefs.edit().putString("lastPool", value?.name).apply()
+
+    var lastIndex: Int
+        get() = prefs.getInt("lastIndex", 0)
+        set(value) = prefs.edit().putInt("lastIndex", value).apply()
 }

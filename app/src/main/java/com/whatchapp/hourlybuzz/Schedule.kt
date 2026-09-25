@@ -10,12 +10,9 @@ object Schedule {
         get() = if (Config.TEST_MODE) Config.TEST_VIBRATE_SECONDS * 1000L
         else Config.VIBRATE_EVERY_MINUTES * 60_000L
 
-    val imageMs: Long
-        get() = if (Config.TEST_MODE) Config.TEST_IMAGE_SECONDS * 1000L
-        else Config.IMAGE_EVERY_MINUTES * 60_000L
-
-    val preloadMs: Long
-        get() = if (Config.TEST_MODE) tickMs else Config.PRELOAD_MINUTES * 60_000L
+    val cardMs: Long
+        get() = if (Config.TEST_MODE) Config.TEST_CARD_SECONDS * 1000L
+        else Config.CARD_EVERY_MINUTES * 60_000L
 
     /** Start of the local day containing [now]. */
     fun localMidnight(now: Long, zone: ZoneId = ZoneId.systemDefault()): Long =
@@ -38,9 +35,17 @@ object Schedule {
         return start + ((now - start) / periodMs) * periodMs
     }
 
-    /** True when [time] is exactly on a picture boundary. */
-    fun isImageTime(time: Long, zone: ZoneId = ZoneId.systemDefault()): Boolean =
-        prevAligned(time, imageMs, zone) == time
+    /** True when [time] is exactly on a card boundary. */
+    fun isCardTime(time: Long, zone: ZoneId = ZoneId.systemDefault()): Boolean =
+        prevAligned(time, cardMs, zone) == time
+
+    /** Number of whole card periods since local midnight (the hour, for hourly cards). */
+    fun cardSlot(time: Long, zone: ZoneId = ZoneId.systemDefault()): Long =
+        (time - localMidnight(time, zone)) / cardMs
+
+    /** Local hour of day (0-23). */
+    fun hourOf(time: Long, zone: ZoneId = ZoneId.systemDefault()): Int =
+        Instant.ofEpochMilli(time).atZone(zone).hour
 
     /** Index wrapped into [0, size), also for negative numbers. */
     fun wrapIndex(index: Int, size: Int): Int =

@@ -38,9 +38,9 @@ class ScheduleTest {
     }
 
     @Test
-    fun imageTimeIsOnTheHour() {
-        assertTrue(Schedule.isImageTime(at(14, 0), zone))
-        assertFalse(Schedule.isImageTime(at(14, 5), zone))
+    fun cardTimeIsOnTheHour() {
+        assertTrue(Schedule.isCardTime(at(14, 0), zone))
+        assertFalse(Schedule.isCardTime(at(14, 5), zone))
     }
 
     @Test
