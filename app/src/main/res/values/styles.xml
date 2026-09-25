@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="ImageTheme" parent="@android:style/Theme.DeviceDefault.NoActionBar">
+        <!-- Swipes browse pictures instead of closing the screen -->
+        <item name="android:windowSwipeToDismiss">false</item>
+        <item name="android:windowBackground">@android:color/black</item>
+    </style>
+</resources>

@@ -1,9 +1,0 @@
-{
-  "name": "hourly-buzz",
-  "version": "1.0.0",
-  "private": true,
-  "description": "Tizen wearable web app: vibrate every 5 minutes, show a picture every hour",
-  "scripts": {
-    "test": "node --test"
-  }
-}
