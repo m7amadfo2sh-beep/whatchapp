@@ -76,8 +76,10 @@ turns the screen on by itself, so a picture that is still open is visible again.
 
 ### 1. Get the APK
 
-Every push to GitHub builds the app automatically (**Actions** tab → *Build watch app* → latest
-run → *Artifacts* → **HourlyBuzz-apk**). Download and unzip it to get `app-release.apk`.
+Every push to GitHub builds the app automatically and publishes it on the repo's
+**Releases** page (latest release → **HourlyBuzz.apk**). It is also attached to each run in the
+**Actions** tab (*Build watch app* → latest
+run → *Artifacts* → **HourlyBuzz-apk**). Download and unzip it to get `HourlyBuzz.apk`.
 
 Or build it yourself with Android Studio: open this folder, then run *Build → Build APK(s)*.
 
@@ -97,7 +99,7 @@ With [Android platform-tools](https://developer.android.com/tools/releases/platf
 ```bash
 adb pair <watch-ip>:<pairing-port>      # enter the pairing code
 adb connect <watch-ip>:<port>           # the port shown on the Wireless debugging screen
-adb install -r app-release.apk
+adb install -r HourlyBuzz.apk
 ```
 
 No computer? Phone apps such as *Bugjaeger* or *Wear Installer 2* can install APKs over the same
