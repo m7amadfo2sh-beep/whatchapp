@@ -15,10 +15,13 @@ object Config {
     /** How often a dua or Quran verse card is shown, in minutes (60 = on the hour). */
     const val CARD_EVERY_MINUTES = 60
 
-    /** Show a dhikr on screen with each buzz. false = buzz only (saves battery). */
+    /**
+     * Post a dhikr with each buzz. It is a quiet notification: it does not turn
+     * the screen on, you see it when you look at the watch. false = buzz only.
+     */
     const val SHOW_DHIKR = true
 
-    /** How long the dhikr stays on screen before closing itself. */
+    /** When you tap the dhikr notification, how long it stays full screen. */
     const val DHIKR_SHOW_SECONDS = 8
 
     /** Keep the screen on for this long when a dua/verse card appears (0 = watch default). */

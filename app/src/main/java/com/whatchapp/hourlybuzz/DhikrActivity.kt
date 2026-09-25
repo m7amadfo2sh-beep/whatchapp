@@ -10,7 +10,7 @@ import android.view.KeyEvent
 import android.view.MotionEvent
 import android.widget.TextView
 
-/** The dhikr shown with each 5-minute buzz. Closes itself after a few seconds. */
+/** A dhikr full screen (opened from its notification). Closes itself after a few seconds. */
 class DhikrActivity : Activity(), ActionHost {
     override val screen = Screen.DHIKR
 

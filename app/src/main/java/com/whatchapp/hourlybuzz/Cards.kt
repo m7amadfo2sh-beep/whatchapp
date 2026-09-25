@@ -5,17 +5,20 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
-import android.content.Intent
 
 /**
- * Puts the dhikr and the hourly card on screen.
+ * Shows the dhikr and the hourly card.
  *
- * When the app is already visible it opens the screen directly; otherwise a
- * full-screen notification turns the watch screen on and opens it.
+ * Only the hourly card turns the screen on (a full-screen notification, or
+ * directly if the app is already visible). The 5-minute dhikr is a quiet
+ * notification that waits until you look at the watch.
  */
 object Cards {
     private const val CHANNEL_CARDS = "cards"
-    private const val CHANNEL_DHIKR = "dhikr"
+    private const val CHANNEL_DHIKR = "dhikr_quiet"
+
+    /** Channels from older versions, removed on upgrade. */
+    private val OLD_CHANNELS = listOf("dhikr")
     const val NOTIFICATION_CARD = 1
     const val NOTIFICATION_DHIKR = 2
 
@@ -23,12 +26,28 @@ object Cards {
     @Volatile
     var visibleScreens = 0
 
-    /** Every buzz: show the next dhikr. */
+    /**
+     * Every buzz: post the next dhikr as a quiet notification. It does not turn
+     * the screen on; tapping it shows the dhikr full screen.
+     */
     fun showDhikr(context: Context) {
         if (!Config.SHOW_DHIKR) return
         val text = Content.nextDhikr(context) ?: return
-        val intent = DhikrActivity.intent(context, text)
-        present(context, intent, CHANNEL_DHIKR, NOTIFICATION_DHIKR, text, Schedule.tickMs)
+        val pending = PendingIntent.getActivity(
+            context, NOTIFICATION_DHIKR, DhikrActivity.intent(context, text),
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
+        )
+        val notification = Notification.Builder(context, channel(context, CHANNEL_DHIKR))
+            .setSmallIcon(R.drawable.ic_notification)
+            .setContentTitle(text)
+            .setStyle(Notification.BigTextStyle().bigText(text))
+            .setCategory(Notification.CATEGORY_REMINDER)
+            .setContentIntent(pending)
+            .setAutoCancel(true)
+            .setOnlyAlertOnce(true)
+            .setTimeoutAfter(Schedule.tickMs)
+            .build()
+        context.getSystemService(NotificationManager::class.java).notify(NOTIFICATION_DHIKR, notification)
     }
 
     /** On the hour: show the next dua or verse. */
@@ -43,7 +62,26 @@ object Cards {
         cancel(context, NOTIFICATION_DHIKR)
         val card = Content.cards(context, pool)[index]
         val intent = CardActivity.intent(context, pool, index, scheduled = true)
-        present(context, intent, CHANNEL_CARDS, NOTIFICATION_CARD, card.title, Schedule.cardMs)
+        if (visibleScreens > 0) {
+            context.startActivity(intent)
+            return
+        }
+        // A full-screen notification turns the screen on and opens the card.
+        val pending = PendingIntent.getActivity(
+            context, NOTIFICATION_CARD, intent,
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
+        )
+        val notification = Notification.Builder(context, channel(context, CHANNEL_CARDS))
+            .setSmallIcon(R.drawable.ic_notification)
+            .setContentTitle(context.getString(R.string.app_name))
+            .setContentText(card.title)
+            .setCategory(Notification.CATEGORY_ALARM)
+            .setFullScreenIntent(pending, true)
+            .setContentIntent(pending)
+            .setAutoCancel(true)
+            .setTimeoutAfter(Schedule.cardMs)
+            .build()
+        context.getSystemService(NotificationManager::class.java).notify(NOTIFICATION_CARD, notification)
     }
 
     /** Opens the most recent card (or the next one if none was shown yet). */
@@ -59,36 +97,16 @@ object Cards {
         context.getSystemService(NotificationManager::class.java).cancel(id)
     }
 
-    private fun present(
-        context: Context, intent: Intent, channel: String, id: Int, text: String, timeoutMs: Long,
-    ) {
-        if (visibleScreens > 0) {
-            context.startActivity(intent)
-            return
-        }
-        val pending = PendingIntent.getActivity(
-            context, id, intent,
-            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
-        )
-        val notification = Notification.Builder(context, channel(context, channel))
-            .setSmallIcon(R.drawable.ic_notification)
-            .setContentTitle(context.getString(R.string.app_name))
-            .setContentText(text)
-            .setCategory(Notification.CATEGORY_ALARM)
-            .setFullScreenIntent(pending, true)
-            .setContentIntent(pending)
-            .setAutoCancel(true)
-            .setTimeoutAfter(timeoutMs)
-            .build()
-        context.getSystemService(NotificationManager::class.java).notify(id, notification)
-    }
-
     private fun channel(context: Context, id: String): String {
         val manager = context.getSystemService(NotificationManager::class.java)
+        OLD_CHANNELS.forEach { manager.deleteNotificationChannel(it) }
         if (manager.getNotificationChannel(id) == null) {
-            val name = if (id == CHANNEL_DHIKR) R.string.channel_dhikr else R.string.channel_cards
+            val dhikr = id == CHANNEL_DHIKR
+            // Low importance: no pop-up and no screen wake for the dhikr.
+            val importance = if (dhikr) NotificationManager.IMPORTANCE_LOW else NotificationManager.IMPORTANCE_HIGH
+            val name = if (dhikr) R.string.channel_dhikr else R.string.channel_cards
             manager.createNotificationChannel(
-                NotificationChannel(id, context.getString(name), NotificationManager.IMPORTANCE_HIGH).apply {
+                NotificationChannel(id, context.getString(name), importance).apply {
                     // The app does its own buzz/sound (see Alerts).
                     setSound(null, null)
                     enableVibration(false)

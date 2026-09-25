@@ -50,10 +50,8 @@
             android:excludeFromRecents="true"
             android:exported="false"
             android:launchMode="singleTask"
-            android:showWhenLocked="true"
             android:taskAffinity="com.whatchapp.hourlybuzz.dhikr"
-            android:theme="@style/FullScreenTheme"
-            android:turnScreenOn="true" />
+            android:theme="@style/FullScreenTheme" />
 
         <receiver
             android:name=".AlarmReceiver"

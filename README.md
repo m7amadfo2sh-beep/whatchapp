@@ -3,9 +3,11 @@
 A Wear OS app for the Samsung Galaxy Watch 7 (and any Wear OS 3+ watch: Galaxy Watch 4 and
 newer, Pixel Watch, …). It:
 
-- **vibrates every 5 minutes** (on the clock: :00, :05, :10 …) and shows a **dhikr** on screen
-  for a few seconds: سبحان الله, الحمد لله, لا إله إلا الله, الله أكبر, أستغفر الله …
-- **every hour** (on the hour) shows a full‑screen **dua or Quran verse** in Arabic:
+- **vibrates every 5 minutes** (on the clock: :00, :05, :10 …) and posts a **dhikr** as a quiet
+  notification: سبحان الله, الحمد لله, لا إله إلا الله, الله أكبر, أستغفر الله … It does **not**
+  turn the screen on; you see it when you look at the watch. Tap it to show it full screen.
+- **every hour** (on the hour) **turns the screen on** and shows a full‑screen **dua or Quran
+  verse** in Arabic:
   - odd hours: a Quran verse (36 well‑known verses and Quranic duas: آية الكرسي, الإخلاص,
     المعوذتين, الفاتحة, …)
   - even hours: أذكار الصباح (05:00–11:59), أذكار المساء (16:00–20:59), other hours general
@@ -41,8 +43,8 @@ Edit **`app/src/main/java/com/whatchapp/hourlybuzz/Config.kt`**:
 ```kotlin
 const val VIBRATE_EVERY_MINUTES = 5
 const val CARD_EVERY_MINUTES = 60
-const val SHOW_DHIKR = true          // false = buzz only, no dhikr on screen
-const val DHIKR_SHOW_SECONDS = 8     // how long the dhikr stays on screen
+const val SHOW_DHIKR = true          // false = buzz only, no dhikr notification
+const val DHIKR_SHOW_SECONDS = 8     // how long a tapped dhikr stays full screen
 val MORNING_HOURS = 5..11
 val EVENING_HOURS = 16..20
 ```
@@ -60,13 +62,13 @@ out.
 | Dua / verse | Turn the **bezel** | Scroll a long text; at the end, go to the next / previous card |
 | Dua / verse | **Swipe** left / right | Next / previous card |
 | Dua / verse | **Tap** or **Back** | Close |
-| Dhikr | **Tap** or **Back** | Close early (it also closes by itself) |
+| Dhikr notification | **Tap** | Show the dhikr full screen (closes by itself) |
 
 The Galaxy Watch 7's touch bezel (swipe around the edge of the screen) and the Classic's rotating
 bezel both work. If the cards move the wrong way when you turn it, set
 `BEZEL_REVERSED = true`.
 
-When you first open the app, allow **notifications**. The dhikr and the hourly card are shown through a
+When you first open the app, allow **notifications**. The hourly card is shown through a
 full-screen notification. If a yellow banner appears on the main screen, tap it and allow the
 setting it opens.
 
@@ -137,9 +139,8 @@ wireless debugging connection.
 - **The alarm icon**: the app uses Android's "alarm clock" alarms. They are the only kind
   allowed to fire every 5 minutes while the watch sleeps. As a result, the watch may show the
   next buzz as an upcoming alarm.
-- **Battery**: the watch sleeps between buzzes, but turning the screen on for the dhikr every
-  5 minutes uses noticeably more battery than buzzing alone. If the battery doesn't last the day,
-  set `SHOW_DHIKR = false` (buzz only) or a shorter `DHIKR_SHOW_SECONDS`.
+- **Battery**: the watch sleeps between buzzes and the screen only turns on once an hour, so
+  battery use is modest.
 - **Survives restarts**: the schedule restarts after the watch reboots or the app is updated.
   **Force stop** cancels it until you open the app again.
 
