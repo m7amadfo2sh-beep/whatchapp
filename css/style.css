@@ -1,0 +1,130 @@
+/* Round 360x360 watch screen. Content is kept inside the inscribed circle. */
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  background: #000;
+  color: #fff;
+  font-family: "SamsungOneUI", "Tizen", sans-serif;
+  overflow: hidden;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+.screen {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 12% 15%;
+  text-align: center;
+}
+
+h1 {
+  font-size: 22px;
+  font-weight: 600;
+  color: #9ad0ff;
+  margin-bottom: 14px;
+}
+
+.badge {
+  font-size: 11px;
+  letter-spacing: 1px;
+  color: #000;
+  background: #ffc857;
+  border-radius: 8px;
+  padding: 2px 8px;
+  margin-bottom: 6px;
+}
+
+.toggle {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  border: none;
+  font-size: 26px;
+  font-weight: 700;
+  color: #fff;
+  transition: background 0.2s;
+}
+
+.toggle.on {
+  background: #1f8f4e;
+}
+
+.toggle.off {
+  background: #555;
+}
+
+.rows {
+  margin-top: 16px;
+  width: 100%;
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 17px;
+  padding: 3px 0;
+}
+
+.label {
+  color: #aaa;
+}
+
+.value {
+  font-variant-numeric: tabular-nums;
+}
+
+.link {
+  margin-top: 12px;
+  background: none;
+  border: none;
+  color: #9ad0ff;
+  font-size: 16px;
+  padding: 6px 10px;
+}
+
+.image-view {
+  padding: 0;
+  background: #000;
+}
+
+.image-view img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.image-msg {
+  padding: 0 18%;
+  font-size: 18px;
+  color: #ccc;
+}
+
+.image-caption {
+  position: absolute;
+  bottom: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 13px;
+  background: rgba(0, 0, 0, 0.55);
+  border-radius: 10px;
+  padding: 2px 8px;
+}

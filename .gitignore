@@ -1,0 +1,9 @@
+# Tizen Studio build output
+.buildResult/
+.sign/
+*.wgt
+.project
+.settings/
+.tproject
+.sdk_delta.info
+node_modules/
