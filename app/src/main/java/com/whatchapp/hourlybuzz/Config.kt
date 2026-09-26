@@ -16,19 +16,34 @@ object Config {
     const val CARD_EVERY_MINUTES = 60
 
     /**
-     * Post a dhikr with each buzz. It is a quiet notification: it does not turn
-     * the screen on, you see it when you look at the watch. false = buzz only.
+     * Post a dhikr with each 5-minute buzz as a quiet notification (it does not
+     * turn the screen on). false = buzz only, nothing shown.
      */
-    const val SHOW_DHIKR = true
+    const val SHOW_DHIKR = false
 
     /** When you tap the dhikr notification, how long it stays full screen. */
     const val DHIKR_SHOW_SECONDS = 8
 
+    /**
+     * Each hour's card is shown this many times, [CARD_REPEAT_MINUTES] apart
+     * (3 and 3 = at :00, :03 and :06). Each time: buzz, screen on, scroll.
+     */
+    const val CARD_SHOW_TIMES = 3
+    const val CARD_REPEAT_MINUTES = 3
+
     /** Keep the screen on for this long when a dua/verse card appears (0 = watch default). */
-    const val CARD_SCREEN_ON_SECONDS = 30
+    const val CARD_SCREEN_ON_SECONDS = 60
 
     /** Close the card automatically after this many seconds (0 = stay until dismissed). */
-    const val CARD_AUTO_CLOSE_SECONDS = 0
+    const val CARD_AUTO_CLOSE_SECONDS = 60
+
+    /**
+     * Scroll long cards automatically: wait [AUTO_SCROLL_PAUSE_SECONDS] at the
+     * top, then scroll slowly so the end is reached before the card closes.
+     * Touching the screen or turning the bezel stops it.
+     */
+    const val AUTO_SCROLL = true
+    const val AUTO_SCROLL_PAUSE_SECONDS = 3
 
     /** Hours (0-23) that show أذكار الصباح / أذكار المساء instead of general duas. */
     val MORNING_HOURS = 5..11
@@ -89,4 +104,5 @@ object Config {
     const val TEST_MODE = false
     const val TEST_VIBRATE_SECONDS = 20
     const val TEST_CARD_SECONDS = 60
+    const val TEST_REPEAT_SECONDS = 15
 }

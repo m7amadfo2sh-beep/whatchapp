@@ -1,5 +1,6 @@
 package com.whatchapp.hourlybuzz
 
+import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
@@ -12,10 +13,14 @@ import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
+import android.view.animation.LinearInterpolator
 import android.widget.ScrollView
 import android.widget.TextView
 
-/** A full-screen dua or Quran verse. Bezel scrolls/browses, swipe browses, tap or Back closes. */
+/**
+ * A full-screen dua or Quran verse. Long texts scroll by themselves; the bezel
+ * scrolls/browses, swipe browses, tap or Back closes.
+ */
 class CardActivity : Activity(), ActionHost {
     override val screen = Screen.CARD
 
@@ -26,6 +31,8 @@ class CardActivity : Activity(), ActionHost {
     private lateinit var source: TextView
     private val handler = Handler(Looper.getMainLooper())
     private val autoClose = Runnable { finish() }
+    private val startAutoScroll = Runnable { autoScroll() }
+    private var scroller: ObjectAnimator? = null
     private var pool = Pool.GENERAL
     private var index = 0
 
@@ -44,6 +51,7 @@ class CardActivity : Activity(), ActionHost {
 
         val detector = Gestures.touchDetector(this, this)
         scroll.setOnTouchListener { _, e ->
+            if (e.action == MotionEvent.ACTION_DOWN) stopAutoScroll()
             detector.onTouchEvent(e)
             false // let the ScrollView scroll too
         }
@@ -67,6 +75,7 @@ class CardActivity : Activity(), ActionHost {
     }
 
     override fun onDestroy() {
+        stopAutoScroll()
         handler.removeCallbacksAndMessages(null)
         super.onDestroy()
     }
@@ -84,12 +93,15 @@ class CardActivity : Activity(), ActionHost {
         show(intent.getIntExtra(EXTRA_INDEX, 0))
     }
 
+    private val releaseScreen = Runnable {
+        window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+    }
+
     private fun keepScreenOn() {
         if (Config.CARD_SCREEN_ON_SECONDS <= 0) return
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-        handler.postDelayed({
-            window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-        }, Config.CARD_SCREEN_ON_SECONDS * 1000L)
+        handler.removeCallbacks(releaseScreen)
+        handler.postDelayed(releaseScreen, Config.CARD_SCREEN_ON_SECONDS * 1000L)
     }
 
     private fun show(newIndex: Int) {
@@ -107,7 +119,33 @@ class CardActivity : Activity(), ActionHost {
         count.text = "×" + arabicDigits(card.count)
         source.visibility = if (card.source != null) View.VISIBLE else View.GONE
         source.text = card.source
+        stopAutoScroll()
         scroll.scrollTo(0, 0)
+        if (Config.AUTO_SCROLL) {
+            handler.postDelayed(startAutoScroll, Config.AUTO_SCROLL_PAUSE_SECONDS * 1000L)
+        }
+    }
+
+    /**
+     * Scrolls slowly to the end so it is reached about 10 s before the card
+     * closes. Texts that fit on screen don't move.
+     */
+    private fun autoScroll() {
+        val range = (scroll.getChildAt(0)?.height ?: 0) - scroll.height
+        if (range <= 0) return
+        val visibleSeconds = if (Config.CARD_AUTO_CLOSE_SECONDS > 0) Config.CARD_AUTO_CLOSE_SECONDS else 60
+        val seconds = maxOf(5, visibleSeconds - Config.AUTO_SCROLL_PAUSE_SECONDS - 10)
+        scroller = ObjectAnimator.ofInt(scroll, "scrollY", scroll.scrollY, range).apply {
+            duration = seconds * 1000L
+            interpolator = LinearInterpolator()
+            start()
+        }
+    }
+
+    private fun stopAutoScroll() {
+        handler.removeCallbacks(startAutoScroll)
+        scroller?.cancel()
+        scroller = null
     }
 
     private fun textSizeFor(card: Card): Float {
@@ -120,6 +158,7 @@ class CardActivity : Activity(), ActionHost {
     }
 
     override fun perform(action: Action): Boolean {
+        stopAutoScroll()
         val step = scroll.height / 4
         when (action) {
             Action.NEXT_CARD -> show(index + 1)

@@ -3,11 +3,21 @@
 A Wear OS app for the Samsung Galaxy Watch 7 (and any Wear OS 3+ watch: Galaxy Watch 4 and
 newer, Pixel Watch, …). It:
 
-- **vibrates every 5 minutes** (on the clock: :00, :05, :10 …) and posts a **dhikr** as a quiet
-  notification: سبحان الله, الحمد لله, لا إله إلا الله, الله أكبر, أستغفر الله … It does **not**
-  turn the screen on; you see it when you look at the watch. Tap it to show it full screen.
-- **every hour** (on the hour) **turns the screen on** and shows a full‑screen **dua or Quran
-  verse** in Arabic:
+- **vibrates every 5 minutes** (on the clock: :00, :05, :10 …). Only a buzz: nothing is shown
+  and the screen stays off.
+- **every hour** shows a full‑screen **dua or Quran verse** in Arabic **3 times, 3 minutes
+  apart** (:00, :03, :06). Each time the watch buzzes, turns the screen on, and the text
+  scrolls by itself. It stays for 1 minute and then closes.
+
+  | Time | What happens |
+  |---|---|
+  | :00 | New dua / verse: buzz, screen on, scrolls, closes after 1 min |
+  | :03 | The same one again |
+  | :05 | Buzz only |
+  | :06 | The same one a third time |
+  | :10, :15 … :55 | Buzz only |
+
+  The cards:
   - odd hours: a Quran verse (36 well‑known verses and Quranic duas: آية الكرسي, الإخلاص,
     المعوذتين, الفاتحة, …)
   - even hours: أذكار الصباح (05:00–11:59), أذكار المساء (16:00–20:59), other hours general
@@ -27,7 +37,7 @@ from published sources into `app/src/main/assets/content.json`:
   Encyclopedia), via the [`quran-json`](https://github.com/risan/quran-json) package (CC BY 4.0).
 - **Duas, adhkar and dhikr:** Hisn al‑Muslim (حصن المسلم), via the
   [`azkar`](https://www.npmjs.com/package/azkar) package (CC BY‑NC‑ND 4.0: personal,
-  non‑commercial use, text unchanged). Each 5‑minute dhikr phrase is checked to appear exactly
+  non‑commercial use, text unchanged). Each optional 5‑minute dhikr phrase is checked to appear exactly
   in this collection.
 
 The Arabic font is [Amiri](https://www.amirifont.org) (SIL Open Font License 1.1). See
@@ -43,8 +53,11 @@ Edit **`app/src/main/java/com/whatchapp/hourlybuzz/Config.kt`**:
 ```kotlin
 const val VIBRATE_EVERY_MINUTES = 5
 const val CARD_EVERY_MINUTES = 60
-const val SHOW_DHIKR = true          // false = buzz only, no dhikr notification
-const val DHIKR_SHOW_SECONDS = 8     // how long a tapped dhikr stays full screen
+const val CARD_SHOW_TIMES = 3        // each hour's card is shown this many times…
+const val CARD_REPEAT_MINUTES = 3    // …this many minutes apart
+const val CARD_AUTO_CLOSE_SECONDS = 60
+const val AUTO_SCROLL = true         // long texts scroll by themselves
+const val SHOW_DHIKR = false         // true = also post a quiet dhikr with each 5-min buzz
 val MORNING_HOURS = 5..11
 val EVENING_HOURS = 16..20
 ```
@@ -59,10 +72,9 @@ out.
 | Main screen | Tap **ON/OFF** | Start/stop the reminders |
 | Main screen | **Show dua / verse**, or turn the bezel clockwise | Open the latest card |
 | Main screen | **Back** button / swipe right | Close the app; the reminders keep running |
-| Dua / verse | Turn the **bezel** | Scroll a long text; at the end, go to the next / previous card |
+| Dua / verse | Turn the **bezel** or touch | Stops the automatic scrolling; the bezel then scrolls, and at the end goes to the next / previous card |
 | Dua / verse | **Swipe** left / right | Next / previous card |
 | Dua / verse | **Tap** or **Back** | Close |
-| Dhikr notification | **Tap** | Show the dhikr full screen (closes by itself) |
 
 The Galaxy Watch 7's touch bezel (swipe around the edge of the screen) and the Classic's rotating
 bezel both work. If the cards move the wrong way when you turn it, set
@@ -139,8 +151,9 @@ wireless debugging connection.
 - **The alarm icon**: the app uses Android's "alarm clock" alarms. They are the only kind
   allowed to fire every 5 minutes while the watch sleeps. As a result, the watch may show the
   next buzz as an upcoming alarm.
-- **Battery**: the watch sleeps between buzzes and the screen only turns on once an hour, so
-  battery use is modest.
+- **Battery**: the watch sleeps between buzzes; the screen turns on 3 times an hour for
+  1 minute each, so battery use is moderate. Lower `CARD_SHOW_TIMES` or
+  `CARD_AUTO_CLOSE_SECONDS` if you need more battery life.
 - **Survives restarts**: the schedule restarts after the watch reboots or the app is updated.
   **Force stop** cancels it until you open the app again.
 
@@ -152,14 +165,14 @@ app/src/main/java/com/whatchapp/hourlybuzz/
   Content.kt        Loads the dhikr/duas/verses; picks which collection each hour uses
   Schedule.kt       Clock maths (unit-tested)
   Scheduler.kt      Sets the exact alarm for the next buzz
-  AlarmReceiver.kt  Runs at each buzz time: buzz + dhikr, or a dua/verse on the hour
+  AlarmReceiver.kt  Runs at each event: 5-min buzz, or the dua/verse at :00, :03, :06
   BootReceiver.kt   Restarts the schedule after reboot / update / clock change
   Alerts.kt         Alert handlers: vibrate, sound
   Cards.kt          Puts the dhikr and the cards on screen (full-screen notification)
   Gestures.kt       Bezel, swipe, tap, Back, wrist flick → actions
   MainActivity.kt   Main screen
   CardActivity.kt   Full-screen dua / verse
-  DhikrActivity.kt  The dhikr shown with each buzz
+  DhikrActivity.kt  Optional dhikr screen (off by default)
 app/src/main/assets/content.json Arabic text (generated by tools/build_content.py)
 app/src/main/res/font/amiri.ttf  Arabic font
 app/src/main/res/raw/chime.wav   Sample sound

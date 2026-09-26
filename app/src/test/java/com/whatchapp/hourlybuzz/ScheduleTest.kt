@@ -44,6 +44,26 @@ class ScheduleTest {
     }
 
     @Test
+    fun cardShowsThreeTimesThreeMinutesApart() {
+        assertEquals(0, Schedule.cardRepeatNumber(at(14, 0), zone))
+        assertEquals(1, Schedule.cardRepeatNumber(at(14, 3), zone))
+        assertEquals(2, Schedule.cardRepeatNumber(at(14, 6), zone))
+        assertEquals(-1, Schedule.cardRepeatNumber(at(14, 9), zone))
+        assertEquals(-1, Schedule.cardRepeatNumber(at(14, 5), zone))
+        assertEquals(-1, Schedule.cardRepeatNumber(at(14, 3, 1), zone))
+    }
+
+    @Test
+    fun nextEventIncludesBuzzesAndCardRepeats() {
+        assertEquals(at(14, 3), Schedule.nextEvent(at(14, 0, 30), zone))
+        assertEquals(at(14, 5), Schedule.nextEvent(at(14, 3, 10), zone))
+        assertEquals(at(14, 6), Schedule.nextEvent(at(14, 5, 10), zone))
+        assertEquals(at(14, 10), Schedule.nextEvent(at(14, 6, 10), zone))
+        assertEquals(at(15, 0), Schedule.nextEvent(at(14, 57), zone))
+        assertEquals(at(14, 3), Schedule.nextEvent(at(14, 0), zone))
+    }
+
+    @Test
     fun wrapIndexHandlesOverflowAndNegatives() {
         assertEquals(0, Schedule.wrapIndex(4, 4))
         assertEquals(3, Schedule.wrapIndex(-1, 4))

@@ -14,6 +14,10 @@ object Schedule {
         get() = if (Config.TEST_MODE) Config.TEST_CARD_SECONDS * 1000L
         else Config.CARD_EVERY_MINUTES * 60_000L
 
+    val repeatMs: Long
+        get() = if (Config.TEST_MODE) Config.TEST_REPEAT_SECONDS * 1000L
+        else Config.CARD_REPEAT_MINUTES * 60_000L
+
     /** Start of the local day containing [now]. */
     fun localMidnight(now: Long, zone: ZoneId = ZoneId.systemDefault()): Long =
         Instant.ofEpochMilli(now).atZone(zone).toLocalDate()
@@ -38,6 +42,32 @@ object Schedule {
     /** True when [time] is exactly on a card boundary. */
     fun isCardTime(time: Long, zone: ZoneId = ZoneId.systemDefault()): Boolean =
         prevAligned(time, cardMs, zone) == time
+
+    /**
+     * 0 when [time] is a card boundary (a new card), 1, 2, ... when it is a
+     * repeat of that card ([Config.CARD_SHOW_TIMES] shows, [repeatMs] apart),
+     * otherwise -1.
+     */
+    fun cardRepeatNumber(time: Long, zone: ZoneId = ZoneId.systemDefault()): Int {
+        val offset = time - prevAligned(time, cardMs, zone)
+        if (offset % repeatMs != 0L) return -1
+        val n = offset / repeatMs
+        return if (n < Config.CARD_SHOW_TIMES) n.toInt() else -1
+    }
+
+    /** The next time after [from] when something happens: a buzz, a card, or a card repeat. */
+    fun nextEvent(from: Long, zone: ZoneId = ZoneId.systemDefault()): Long {
+        var next = nextAligned(from, tickMs, zone)
+        val boundary = prevAligned(from, cardMs, zone)
+        for (base in listOf(boundary, nextAligned(from, cardMs, zone))) {
+            if (base > from) next = minOf(next, base)
+            for (k in 1 until Config.CARD_SHOW_TIMES) {
+                val t = base + k * repeatMs
+                if (t > from) next = minOf(next, t)
+            }
+        }
+        return next
+    }
 
     /** Number of whole card periods since local midnight (the hour, for hourly cards). */
     fun cardSlot(time: Long, zone: ZoneId = ZoneId.systemDefault()): Long =

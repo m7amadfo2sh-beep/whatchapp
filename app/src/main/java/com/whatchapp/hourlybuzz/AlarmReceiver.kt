@@ -4,7 +4,10 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 
-/** Fires at every buzz time: buzz + dhikr, or on the hour a dua/verse card. */
+/**
+ * Fires at every event: on the hour a new dua/verse card, a few minutes later
+ * the same card again (see Config.CARD_SHOW_TIMES), otherwise a 5-minute buzz.
+ */
 class AlarmReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         if (!State(context).enabled) return
@@ -15,12 +18,20 @@ class AlarmReceiver : BroadcastReceiver() {
         // Set the next alarm first so a failure below can't break the chain.
         Scheduler.start(context, from = maxOf(now, due))
 
-        if (Schedule.isCardTime(due)) {
-            Alerts.fire(context, AlertKind.CARD)
-            Cards.showScheduled(context, due)
-        } else {
-            Alerts.fire(context, AlertKind.TICK)
-            Cards.showDhikr(context)
+        val repeat = Schedule.cardRepeatNumber(due)
+        when {
+            repeat == 0 -> {
+                Alerts.fire(context, AlertKind.CARD)
+                Cards.showScheduled(context, due)
+            }
+            repeat > 0 -> {
+                Alerts.fire(context, AlertKind.CARD)
+                Cards.showAgain(context)
+            }
+            else -> {
+                Alerts.fire(context, AlertKind.TICK)
+                Cards.showDhikr(context)
+            }
         }
     }
 }

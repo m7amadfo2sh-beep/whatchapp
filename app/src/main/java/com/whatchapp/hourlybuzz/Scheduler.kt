@@ -28,10 +28,10 @@ object Scheduler {
         Build.VERSION.SDK_INT < Build.VERSION_CODES.S ||
             context.getSystemService(AlarmManager::class.java).canScheduleExactAlarms()
 
-    /** Sets the alarm for the next buzz time after [from]. */
+    /** Sets the alarm for the next event (buzz, card or card repeat) after [from]. */
     fun start(context: Context, from: Long = System.currentTimeMillis()): Boolean {
         if (!canSchedule(context)) return false
-        val due = Schedule.nextAligned(from, Schedule.tickMs)
+        val due = Schedule.nextEvent(from)
         val alarmManager = context.getSystemService(AlarmManager::class.java)
         val showApp = PendingIntent.getActivity(
             context, 0, Intent(context, MainActivity::class.java),

@@ -60,7 +60,20 @@ object Cards {
         state.lastIndex = index
 
         cancel(context, NOTIFICATION_DHIKR)
-        val card = Content.cards(context, pool)[index]
+        presentCard(context, pool, index)
+    }
+
+    /** A few minutes after the hour: show the same card again. */
+    fun showAgain(context: Context) {
+        val state = State(context)
+        val pool = state.lastPool ?: return
+        if (Content.cards(context, pool).isEmpty()) return
+        presentCard(context, pool, state.lastIndex)
+    }
+
+    private fun presentCard(context: Context, pool: Pool, index: Int) {
+        val cards = Content.cards(context, pool)
+        val card = cards[Schedule.wrapIndex(index, cards.size)]
         val intent = CardActivity.intent(context, pool, index, scheduled = true)
         if (visibleScreens > 0) {
             context.startActivity(intent)
