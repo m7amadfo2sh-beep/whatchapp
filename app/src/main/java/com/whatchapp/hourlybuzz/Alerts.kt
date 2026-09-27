@@ -41,6 +41,11 @@ object Alerts {
 
     val vibrate = AlertHandler { context, _, settings ->
         val pattern = settings.vibrate ?: return@AlertHandler
+        vibratePattern(context, pattern)
+    }
+
+    /** Vibrates [pattern] (ms: buzz, pause, buzz, ...), also in Do Not Disturb unless configured otherwise. */
+    fun vibratePattern(context: Context, pattern: LongArray) {
         val vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             context.getSystemService(VibratorManager::class.java).defaultVibrator
         } else {

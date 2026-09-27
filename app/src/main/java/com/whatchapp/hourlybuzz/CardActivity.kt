@@ -168,7 +168,7 @@ class CardActivity : Activity(), ActionHost {
             Action.SCROLL_OR_PREV ->
                 if (scroll.canScrollVertically(-1)) scroll.smoothScrollBy(0, -step) else show(index - 1)
             Action.CLOSE -> finish()
-            Action.SHOW_CARD -> Unit
+            Action.SHOW_CARD, Action.RAKAH_PLUS, Action.RAKAH_MINUS -> Unit
             Action.TOGGLE -> Scheduler.setEnabled(this, !State(this).enabled)
         }
         return true

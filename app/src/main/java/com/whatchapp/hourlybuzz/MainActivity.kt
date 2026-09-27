@@ -45,6 +45,9 @@ class MainActivity : Activity(), ActionHost {
         warning = findViewById(R.id.warning)
         toggle.setOnClickListener { perform(Action.TOGGLE) }
         findViewById<View>(R.id.show_card).setOnClickListener { perform(Action.SHOW_CARD) }
+        findViewById<View>(R.id.prayer_mode).setOnClickListener {
+            startActivity(Intent(this, com.whatchapp.hourlybuzz.prayer.PrayerActivity::class.java))
+        }
         warning.setOnClickListener { fixPermission() }
         findViewById<View>(R.id.test_badge).visibility =
             if (Config.TEST_MODE) View.VISIBLE else View.GONE
@@ -77,6 +80,7 @@ class MainActivity : Activity(), ActionHost {
             Action.SHOW_CARD, Action.NEXT_CARD, Action.PREV_CARD,
             Action.SCROLL_OR_NEXT, Action.SCROLL_OR_PREV -> Cards.open(this)
             Action.CLOSE -> finish()
+            Action.RAKAH_PLUS, Action.RAKAH_MINUS -> Unit
         }
         return true
     }

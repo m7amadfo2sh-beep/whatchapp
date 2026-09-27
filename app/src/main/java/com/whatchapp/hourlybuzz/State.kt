@@ -22,6 +22,16 @@ class State(context: Context) {
     fun setPoolIndex(pool: Pool, value: Int) =
         prefs.edit().putInt("pool_${pool.name}", value).apply()
 
+    /** While prayer mode runs, reminders are paused until this time (ms since epoch). */
+    var prayerActiveUntil: Long
+        get() = prefs.getLong("prayerActiveUntil", 0)
+        set(value) = prefs.edit().putLong("prayerActiveUntil", value).apply()
+
+    /** The imam's posture calibration (see prayer/Calibration). */
+    var calibration: String?
+        get() = prefs.getString("calibration", null)
+        set(value) = prefs.edit().putString("calibration", value).apply()
+
     /** The most recently shown card, so it can be opened again. */
     var lastPool: Pool?
         get() = prefs.getString("lastPool", null)?.let { name -> Pool.entries.find { it.name == name } }

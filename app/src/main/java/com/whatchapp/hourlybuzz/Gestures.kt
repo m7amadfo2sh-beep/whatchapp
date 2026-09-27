@@ -7,7 +7,7 @@ import android.content.Context
 import android.view.InputDevice
 import kotlin.math.abs
 
-enum class Screen { MAIN, CARD, DHIKR, ANYWHERE }
+enum class Screen { MAIN, CARD, DHIKR, PRAYER, ANYWHERE }
 
 /** Watch inputs. To support a new one, detect it and call [Gestures.handle]. */
 enum class Gesture {
@@ -31,6 +31,9 @@ enum class Action {
     /** Scroll a long card; at the end, go to the next/previous card. */
     SCROLL_OR_NEXT,
     SCROLL_OR_PREV,
+    /** Prayer mode: correct the rak'ah count. */
+    RAKAH_PLUS,
+    RAKAH_MINUS,
     CLOSE,
 }
 

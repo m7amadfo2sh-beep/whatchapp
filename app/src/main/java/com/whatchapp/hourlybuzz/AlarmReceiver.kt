@@ -18,6 +18,9 @@ class AlarmReceiver : BroadcastReceiver() {
         // Set the next alarm first so a failure below can't break the chain.
         Scheduler.start(context, from = maxOf(now, due))
 
+        // No reminders during prayer mode: they would confuse the imam.
+        if (State(context).prayerActiveUntil > now) return
+
         val repeat = Schedule.cardRepeatNumber(due)
         when {
             repeat == 0 -> {

@@ -45,6 +45,15 @@ object Config {
     const val AUTO_SCROLL = true
     const val AUTO_SCROLL_PAUSE_SECONDS = 3
 
+    /** Prayer mode ends by itself after sitting this long in the last rak'ah (tashahhud + salam). */
+    const val PRAYER_END_SIT_SECONDS = 150
+
+    /** Prayer mode never runs longer than this. */
+    const val PRAYER_MAX_MINUTES = 30
+
+    /** Save a sensor log of each prayer (Android/data/<package>/files/prayer_logs) to help tune the counter. */
+    const val PRAYER_LOG = true
+
     /** Hours (0-23) that show أذكار الصباح / أذكار المساء instead of general duas. */
     val MORNING_HOURS = 5..11
     val EVENING_HOURS = 16..20
@@ -86,6 +95,11 @@ object Config {
         ),
         Screen.DHIKR to mapOf(
             Gesture.TAP to Action.CLOSE,
+            Gesture.BACK to Action.CLOSE,
+        ),
+        Screen.PRAYER to mapOf(
+            Gesture.BEZEL_CLOCKWISE to Action.RAKAH_PLUS,
+            Gesture.BEZEL_COUNTER_CLOCKWISE to Action.RAKAH_MINUS,
             Gesture.BACK to Action.CLOSE,
         ),
         Screen.ANYWHERE to mapOf(

@@ -69,6 +69,7 @@ class DhikrActivity : Activity(), ActionHost {
                 finish()
             }
             Action.TOGGLE -> Scheduler.setEnabled(this, !State(this).enabled)
+            Action.RAKAH_PLUS, Action.RAKAH_MINUS -> Unit
         }
         return true
     }

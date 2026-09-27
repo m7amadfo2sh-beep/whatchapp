@@ -28,6 +28,47 @@ newer, Pixel Watch, …). It:
 
 Everything is built into the app, so it works offline and nothing is downloaded on the watch.
 
+## Prayer mode (وضع الصلاة) — rak'ah counter for the imam
+
+For the imam wearing the watch. It counts the rak'ahs and, when he **shakes his hand**, buzzes
+how many rak'ahs are **left after the current one**:
+
+| Situation (e.g. Dhuhr, 4) | Shake → |
+|---|---|
+| in the 1st rak'ah | buzz buzz buzz (3 left) |
+| in the 2nd | buzz buzz (2 left) |
+| in the 3rd | buzz (1 left) |
+| in the last | three quick ticks (none left) |
+
+**Use it**
+1. Main screen → **وضع الصلاة**.
+2. The first time, the app asks for a **one-time calibration (~40 s)**. Stand, bow, prostrate
+   and sit when told. One buzz means "hold still"; two buzzes mean "done". This teaches the
+   watch *your* postures (which wrist, how you hold your hands).
+3. Pick the prayer: الفجر، الظهر، العصر، المغرب، العشاء، الجمعة، الوتر, or «أخرى» (1–10).
+4. Pray normally. The screen can be off.
+   - **Shake:** two quick wrist twists (back‑forth‑back).
+   - **Wrong count:** turn the bezel on the prayer screen to correct it (±1, one tick).
+5. It stops by itself after the last rak'ah's tashahhud, or with «إنهاء». Reminders (5‑minute
+   buzz, hourly card) are paused while it runs.
+
+**How it counts.** Each rak'ah has one ruku and two sujood, and the counter follows that order:
+- **Motion sensors:** the tilt of the watch tells standing, bowing and prostrating/sitting apart,
+  using your calibration.
+- **Barometer:** tells the wrist high from the wrist low.
+- **Microphone:** hears the imam's takbir at each movement. **Only the loudness is measured.**
+  Nothing is recorded, recognised or saved. Without mic permission it still works, but it waits
+  a little longer before accepting each movement.
+- **New rak'ah:** it counts one when you stand up again after sujood. Short fidgets that don't
+  fit the order are ignored.
+
+**Accuracy.** It's tested with simulated prayers, but not yet with real ones. Please try it
+praying alone first, with the screen on to watch the count. If it miscounts, the app keeps a
+sensor log of each session (numbers only, no audio). Get it with
+`adb pull /sdcard/Android/data/com.whatchapp.hourlybuzz/files/prayer_logs`. Send the file from
+the prayer that went wrong, and the thresholds can be tuned. Settings are in `Config.kt` (`PRAYER_*`) and in
+`prayer/PostureClassifier.kt`, `prayer/RakahCounter.kt` and `prayer/ShakeDetector.kt`.
+
 ## Where the text comes from
 
 None of the Arabic text was typed by hand. `tools/build_content.py` copies it word for word
@@ -178,4 +219,13 @@ app/src/main/res/font/amiri.ttf  Arabic font
 app/src/main/res/raw/chime.wav   Sample sound
 app/src/test/                    Unit tests (./gradlew testDebugUnitTest)
 .github/workflows/build.yml      Builds the APK on GitHub
+app/src/main/java/com/whatchapp/hourlybuzz/prayer/
+  PrayerActivity.kt      Pick the prayer; live count; bezel correction
+  CalibrationActivity.kt One-time posture calibration
+  PrayerService.kt       Runs in the background: sensors, mic loudness, buzz answers
+  PrayerEngine.kt        Sensors → postures → rak'ahs; shake → answer (unit-tested)
+  PostureClassifier.kt   Matches readings to the calibrated postures
+  RakahCounter.kt        The rak'ah state machine
+  ShakeDetector.kt       The hand-shake gesture
+  VoiceOnsetDetector.kt  Takbir loudness onsets (no recording)
 ```
