@@ -45,6 +45,17 @@ jobs:
           git clone --depth 1 --branch "$WHISPER_CPP_TAG" https://github.com/ggerganov/whisper.cpp
           git clone --depth 1 https://github.com/openai/whisper openai-whisper
           mkdir -p out
+          # The converter takes the decoder length from "max_length", which in this
+          # model's config is a generation setting (1024), not the real decoder size
+          # (max_target_positions = 448). Align them so whisper.cpp can load it.
+          python - <<'PY'
+          import json
+          p = "hf-model/config.json"
+          c = json.load(open(p))
+          print("max_length", c.get("max_length"), "max_target_positions", c["max_target_positions"])
+          c["max_length"] = c["max_target_positions"]
+          json.dump(c, open(p, "w"), indent=2)
+          PY
           python whisper.cpp/models/convert-h5-to-ggml.py hf-model openai-whisper out
           cmake -S whisper.cpp -B wbuild -DCMAKE_BUILD_TYPE=Release -DWHISPER_BUILD_TESTS=OFF
           cmake --build wbuild -j 4 --config Release
