@@ -14,8 +14,8 @@ android {
         versionCode = 1
         versionName = "1.0"
 
-        // Galaxy Watch 7 and other current Wear OS watches are 64-bit ARM.
-        ndk { abiFilters += "arm64-v8a" }
+        // Many Wear OS watches run a 32-bit system even on 64-bit chips, so ship both.
+        ndk { abiFilters += listOf("arm64-v8a", "armeabi-v7a") }
         externalNativeBuild {
             cmake { arguments += listOf("-DANDROID_STL=c++_static") }
         }

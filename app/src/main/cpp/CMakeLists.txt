@@ -14,6 +14,9 @@ set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
 if (ANDROID_ABI STREQUAL "arm64-v8a")
     # Galaxy Watch 7 (Exynos W1000: Cortex-A78 + A55) supports fp16 and dot product.
     set(GGML_CPU_ARM_ARCH "armv8.2-a+fp16+dotprod" CACHE STRING "" FORCE)
+elseif (ANDROID_ABI STREQUAL "armeabi-v7a")
+    # 32-bit watches: NEON with fused multiply-add (as in whisper.cpp's Android example).
+    add_compile_options(-mfpu=neon-vfpv4)
 endif ()
 
 include(FetchContent)
