@@ -1,0 +1,88 @@
+name: Prepare Quran speech model
+
+# Downloads Tarteel's Quran-trained Whisper model, converts it for whisper.cpp,
+# quantizes it, fetches a few recitation clips for tests, and publishes them
+# on the 'model' branch (used by the app build and the recitation tests).
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - .github/workflows/model.yml
+
+permissions:
+  contents: write
+
+env:
+  HF_MODEL: tarteel-ai/whisper-base-ar-quran
+  WHISPER_CPP_TAG: v1.7.6
+
+jobs:
+  model:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Tools
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg cmake
+          pip install --quiet --index-url https://download.pytorch.org/whl/cpu torch
+          pip install --quiet transformers huggingface_hub numpy safetensors
+
+      - name: Download model
+        run: |
+          huggingface-cli download "$HF_MODEL" --local-dir hf-model
+          ls -la hf-model
+          cat hf-model/README.md | head -40 || true
+
+      - name: Convert to whisper.cpp format
+        run: |
+          git clone --depth 1 --branch "$WHISPER_CPP_TAG" https://github.com/ggerganov/whisper.cpp
+          git clone --depth 1 https://github.com/openai/whisper openai-whisper
+          mkdir -p out
+          python whisper.cpp/models/convert-h5-to-ggml.py hf-model openai-whisper out
+          cmake -S whisper.cpp -B wbuild -DCMAKE_BUILD_TYPE=Release -DWHISPER_BUILD_TESTS=OFF
+          cmake --build wbuild -j 4 --config Release
+          ls wbuild/bin
+          Q=$(ls wbuild/bin/*quantize* | head -1)
+          "$Q" out/ggml-model.bin out/ggml-quran-base-q5_1.bin q5_1
+          ls -la out
+
+      - name: Recitation clips for tests (Mishary Alafasy, everyayah.com)
+        run: |
+          mkdir -p audio
+          for ref in 001001 001002 001003 001004 001005 001006 001007 \
+                     112001 112002 112003 112004 \
+                     113001 113002 113003 113004 113005 \
+                     114001 114002 114003 114004 114005 114006 \
+                     036001 036002 036003 036004 036005 036006 036007 036008 036009 036010 \
+                     002255 067001 067002; do
+            curl -sfL "https://everyayah.com/data/Alafasy_128kbps/$ref.mp3" -o "a.mp3" || { echo "missing $ref"; continue; }
+            ffmpeg -loglevel error -y -i a.mp3 -ac 1 -ar 16000 -c:a pcm_s16le "audio/$ref.wav"
+          done
+          ls audio | wc -l
+
+      - name: Quick transcription check
+        run: |
+          CLI=$(ls wbuild/bin/whisper-cli wbuild/bin/main 2>/dev/null | head -1)
+          for f in audio/001001.wav audio/112001.wav audio/036009.wav; do
+            [ -f "$f" ] && "$CLI" -m out/ggml-quran-base-q5_1.bin -l ar -nt -f "$f" 2>/dev/null
+          done
+
+      - name: Publish to 'model' branch
+        run: |
+          mkdir pub && cd pub
+          cp ../out/ggml-quran-base-q5_1.bin .
+          cp -r ../audio .
+          cp ../hf-model/README.md MODEL_CARD.md 2>/dev/null || true
+          cat > SOURCE.txt <<EOT
+          Model: https://huggingface.co/$HF_MODEL (converted with whisper.cpp $WHISPER_CPP_TAG, quantized q5_1)
+          Audio: Mishary Rashid Alafasy, https://everyayah.com (test clips only, not shipped in the app)
+          EOT
+          git init -q -b model
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git add -A
+          git commit -q -m "Quran speech model from $HF_MODEL"
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" model

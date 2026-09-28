@@ -2,7 +2,7 @@ name: Build watch app
 
 on:
   push:
-    branches-ignore: [apk]
+    branches-ignore: [apk, model]
   pull_request:
   workflow_dispatch:
 
