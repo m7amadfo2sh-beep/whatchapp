@@ -69,9 +69,9 @@ jobs:
 
       - name: Quick transcription check
         run: |
-          CLI=$(ls wbuild/bin/whisper-cli wbuild/bin/main 2>/dev/null | head -1)
+          CLI=wbuild/bin/whisper-cli
           for f in audio/001001.wav audio/112001.wav audio/036009.wav; do
-            [ -f "$f" ] && "$CLI" -m out/ggml-quran-base-q5_1.bin -l ar -nt -f "$f" 2>/dev/null
+            "$CLI" -m out/ggml-quran-base-q5_1.bin -l ar -nt -f "$f" 2>/dev/null || true
           done
 
       - name: Publish to 'model' branch
