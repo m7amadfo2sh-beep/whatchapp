@@ -32,7 +32,11 @@ jobs:
 
       - name: Download model
         run: |
-          huggingface-cli download "$HF_MODEL" --local-dir hf-model
+          hf download "$HF_MODEL" --local-dir hf-model || {
+            echo "Falling back to the tiny model"
+            echo "HF_MODEL=tarteel-ai/whisper-tiny-ar-quran" >> "$GITHUB_ENV"
+            hf download tarteel-ai/whisper-tiny-ar-quran --local-dir hf-model
+          }
           ls -la hf-model
           cat hf-model/README.md | head -40 || true
 
