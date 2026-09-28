@@ -1,0 +1,2 @@
+Model: https://huggingface.co/tarteel-ai/whisper-base-ar-quran (converted with whisper.cpp v1.7.6, quantized q5_1)
+Audio: Mishary Rashid Alafasy, https://everyayah.com (test clips only, not shipped in the app)
