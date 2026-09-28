@@ -27,6 +27,15 @@
                 android:textColor="#E3C27A"
                 android:textSize="16sp" />
 
+            <CheckBox
+                android:id="@+id/recite_toggle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checked="true"
+                android:text="@string/recite_toggle"
+                android:textColor="#FFFFFF"
+                android:textSize="14sp" />
+
             <LinearLayout
                 android:id="@+id/prayer_buttons"
                 android:layout_width="match_parent"
@@ -75,6 +84,17 @@
                 android:textColor="#000000"
                 android:textSize="14sp" />
 
+            <Button
+                android:id="@+id/recite_only"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/toggle_off"
+                android:paddingHorizontal="12dp"
+                android:text="@string/recite_only"
+                android:textColor="#FFFFFF"
+                android:textSize="13sp" />
+
             <TextView
                 android:id="@+id/recalibrate"
                 android:layout_width="wrap_content"
@@ -116,6 +136,15 @@
             android:layout_height="wrap_content"
             android:textColor="#9A9A9A"
             android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/live_recite"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:textColor="#9AD0FF"
+            android:textSize="14sp"
+            android:visibility="gone" />
 
         <TextView
             android:layout_width="wrap_content"

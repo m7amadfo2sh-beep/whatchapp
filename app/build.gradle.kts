@@ -13,6 +13,25 @@ android {
         targetSdk = 34 // Wear OS 5 (Galaxy Watch 7)
         versionCode = 1
         versionName = "1.0"
+
+        // Galaxy Watch 7 and other current Wear OS watches are 64-bit ARM.
+        ndk { abiFilters += "arm64-v8a" }
+        externalNativeBuild {
+            cmake { arguments += listOf("-DANDROID_STL=c++_static") }
+        }
+    }
+
+    // whisper.cpp speech recognition for the recitation checker (app/src/main/cpp).
+    externalNativeBuild {
+        cmake {
+            path = file("src/main/cpp/CMakeLists.txt")
+            version = "3.22.1"
+        }
+    }
+
+    // The speech model is copied out of the APK on first use; keep it uncompressed.
+    androidResources {
+        noCompress += "bin"
     }
 
     buildTypes {
@@ -29,6 +48,16 @@ android {
     }
     kotlinOptions {
         jvmTarget = "17"
+    }
+}
+
+android {
+    testOptions {
+        unitTests.all {
+            // Real-audio recitation test (see RecitationAudioTest); skipped when unset.
+            it.systemProperty("reciteE2E", System.getenv("RECITE_E2E") ?: "")
+            it.maxHeapSize = "2g"
+        }
     }
 }
 

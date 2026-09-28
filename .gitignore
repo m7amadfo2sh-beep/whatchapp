@@ -6,3 +6,6 @@ local.properties
 .kotlin/
 captures/
 *.apk
+# Speech model: fetched from the 'model' branch at build time
+app/src/main/assets/ggml-quran.bin
+.cxx/

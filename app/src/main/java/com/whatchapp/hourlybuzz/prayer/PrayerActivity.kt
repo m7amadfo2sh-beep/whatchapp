@@ -12,6 +12,7 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.CheckBox
 import android.widget.LinearLayout
 import android.widget.TextView
 import com.whatchapp.hourlybuzz.Action
@@ -36,8 +37,11 @@ class PrayerActivity : Activity(), ActionHost {
     private lateinit var livePosture: TextView
     private lateinit var otherCount: TextView
     private lateinit var otherStart: Button
+    private lateinit var reciteToggle: CheckBox
+    private lateinit var liveRecite: TextView
+    private var reciterAvailable = false
     private var other = 2
-    private var pending: Pair<Int, String>? = null
+    private var pending: Triple<Int, String, Boolean>? = null
     private var askedToCalibrate = false
     private var startRequestedAt = 0L
     private val handler = Handler(Looper.getMainLooper())
@@ -60,6 +64,14 @@ class PrayerActivity : Activity(), ActionHost {
         livePosture = findViewById(R.id.live_posture)
         otherCount = findViewById(R.id.other_count)
         otherStart = findViewById(R.id.other_start)
+        reciteToggle = findViewById(R.id.recite_toggle)
+        liveRecite = findViewById(R.id.live_recite)
+        reciterAvailable = PrayerService.reciterAvailable(this)
+        reciteToggle.visibility = if (reciterAvailable) View.VISIBLE else View.GONE
+        findViewById<View>(R.id.recite_only).apply {
+            visibility = if (reciterAvailable) View.VISIBLE else View.GONE
+            setOnClickListener { begin(0, getString(R.string.recite_title), recite = true) }
+        }
 
         val buttons = findViewById<LinearLayout>(R.id.prayer_buttons)
         for ((name, rakahs) in PRAYERS) {
@@ -67,12 +79,14 @@ class PrayerActivity : Activity(), ActionHost {
             buttons.addView(Button(this).apply {
                 text = "$label  ${arabicDigits(rakahs)}"
                 textSize = 15f
-                setOnClickListener { begin(rakahs, label) }
+                setOnClickListener { begin(rakahs, label, reciteToggle.isChecked && reciterAvailable) }
             }, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
         }
         findViewById<View>(R.id.other_minus).setOnClickListener { setOther(other - 1) }
         findViewById<View>(R.id.other_plus).setOnClickListener { setOther(other + 1) }
-        otherStart.setOnClickListener { begin(other, getString(R.string.prayer_other)) }
+        otherStart.setOnClickListener {
+            begin(other, getString(R.string.prayer_other), reciteToggle.isChecked && reciterAvailable)
+        }
         setOther(other)
         findViewById<View>(R.id.recalibrate).setOnClickListener {
             startActivity(Intent(this, CalibrationActivity::class.java))
@@ -90,7 +104,7 @@ class PrayerActivity : Activity(), ActionHost {
             askedToCalibrate = true
             startActivity(Intent(this, CalibrationActivity::class.java))
         }
-        if (PrayerService.engine != null) showLive() else showPicker()
+        if (PrayerService.running) showLive() else showPicker()
     }
 
     override fun onPause() {
@@ -104,29 +118,32 @@ class PrayerActivity : Activity(), ActionHost {
         otherStart.text = "${getString(R.string.prayer_start)} (${getString(R.string.prayer_other)})"
     }
 
-    private fun begin(rakahs: Int, name: String) {
-        if (Calibration.decode(State(this).calibration) == null) {
+    /** [rakahs] = 0: recitation check only (no calibration needed). */
+    private fun begin(rakahs: Int, name: String, recite: Boolean) {
+        if (rakahs > 0 && Calibration.decode(State(this).calibration) == null) {
             startActivity(Intent(this, CalibrationActivity::class.java))
             return
         }
         if (checkSelfPermission(Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
             // The mic helps (takbir detection) but isn't required: start either way.
-            pending = rakahs to name
+            pending = Triple(rakahs, name, recite)
             requestPermissions(arrayOf(Manifest.permission.RECORD_AUDIO), REQUEST_MIC)
             return
         }
-        startPrayer(rakahs, name)
+        startPrayer(rakahs, name, recite)
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         val p = pending ?: return
         pending = null
-        if (requestCode == REQUEST_MIC) startPrayer(p.first, p.second)
+        // Recitation checking needs the mic; rak'ah counting works without it.
+        val micOk = grantResults.firstOrNull() == PackageManager.PERMISSION_GRANTED
+        if (requestCode == REQUEST_MIC && (p.first > 0 || micOk)) startPrayer(p.first, p.second, p.third && micOk)
     }
 
-    private fun startPrayer(rakahs: Int, name: String) {
-        PrayerService.start(this, rakahs, name)
+    private fun startPrayer(rakahs: Int, name: String, recite: Boolean) {
+        PrayerService.start(this, rakahs, name, recite)
         startRequestedAt = android.os.SystemClock.elapsedRealtime()
         showLive()
     }
@@ -145,23 +162,37 @@ class PrayerActivity : Activity(), ActionHost {
     }
 
     private fun updateLive() {
-        val engine = PrayerService.engine
-        if (engine == null) {
+        if (!PrayerService.running) {
             // Give the service a moment to start; after that, it has ended.
             if (android.os.SystemClock.elapsedRealtime() - startRequestedAt > 3000) showPicker()
             return
         }
         liveName.text = PrayerService.prayerName
-        val shown = engine.counter.rakah.coerceAtMost(engine.total)
-        liveRakah.text = "${arabicDigits(shown)} / ${arabicDigits(engine.total)}"
-        livePosture.setText(
-            when (engine.counter.stable) {
-                Posture.QIYAM -> R.string.posture_qiyam
-                Posture.RUKU -> R.string.posture_ruku
-                Posture.LOW -> R.string.posture_low
-                else -> R.string.posture_moving
+        val engine = PrayerService.engine
+        liveRakah.visibility = if (engine != null) View.VISIBLE else View.GONE
+        livePosture.visibility = liveRakah.visibility
+        if (engine != null) {
+            val shown = engine.counter.rakah.coerceAtMost(engine.total)
+            liveRakah.text = "${arabicDigits(shown)} / ${arabicDigits(engine.total)}"
+            livePosture.setText(
+                when (engine.counter.stable) {
+                    Posture.QIYAM -> R.string.posture_qiyam
+                    Posture.RUKU -> R.string.posture_ruku
+                    Posture.LOW -> R.string.posture_low
+                    else -> R.string.posture_moving
+                }
+            )
+        }
+        val r = PrayerService.reciteState
+        liveRecite.visibility = if (r != null) View.VISIBLE else View.GONE
+        if (r != null) {
+            liveRecite.text = when {
+                r.loading -> getString(R.string.recite_loading)
+                r.failed -> getString(R.string.recite_failed)
+                r.place.isEmpty() -> getString(R.string.recite_listening)
+                else -> r.place
             }
-        )
+        }
     }
 
     override fun perform(action: Action): Boolean {

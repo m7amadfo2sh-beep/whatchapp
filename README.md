@@ -72,6 +72,47 @@ sensor log of each session (numbers only, no audio). Get it with
 the prayer that went wrong, and the thresholds can be tuned. Settings are in `Config.kt` (`PRAYER_*`) and in
 `prayer/PostureClassifier.kt`, `prayer/RakahCounter.kt` and `prayer/ShakeDetector.kt`.
 
+## Recitation checker (تصحيح القراءة) — the watch listens and corrects
+
+The whole Quran (all 6,236 ayat, Uthmani text from QuranEnc) is in the app. The watch listens
+to the recitation with a **Quran‑trained speech model that runs on the watch itself**. It is
+[Tarteel's `whisper-base-ar-quran`](https://huggingface.co/tarteel-ai/whisper-base-ar-quran)
+(Apache‑2.0), run with [whisper.cpp](https://github.com/ggerganov/whisper.cpp). It needs no
+internet, and no audio is saved.
+
+It follows along in the mushaf and, when it is **sure** of a mistake, **buzzes hard** (three
+long buzzes) and shows the correction full screen:
+
+| Mistake | What you see |
+|---|---|
+| **خطأ في كلمة** — a different word | the correct word(s), and what it heard |
+| **سقط من القراءة** — words or an ayah left out | what was skipped |
+| **انتقال إلى موضع آخر** — continued from somewhere else (e.g. a similar ayah) | the correct continuation |
+| **تذكير: التكملة** — stopped mid‑ayah for 4 s | the next words (fath) |
+
+- **Where he is reading:** it finds the place in the whole Quran by itself from the first words.
+  After Al‑Fatiha, moving on to any surah is normal and doesn't alarm.
+- **What it ignores:** takbir, «سمع الله لمن حمده», «آمين», the basmala and the isti'adha.
+- **How to use:** on the prayer screen, keep **تصحيح القراءة** ticked (it counts rak'ahs and
+  checks the recitation), or tap **التسميع فقط** to check recitation only. The first start
+  prepares the model for a few seconds.
+- **Built to stay quiet unless sure:** a word only counts as wrong if the model heard it
+  confidently and the words around it are right. Pauses at the end of an ayah never alarm.
+
+**Tested with real recitation.** Every build runs the whole chain on recordings of Sheikh
+Mishary Alafasy (Al‑Fatiha, Ya‑Sin 1–10, Ayat al‑Kursi):
+- read correctly: no alarms;
+- an ayah left out: «سقط» with the missing ayah;
+- stopping mid‑ayah: the next words are prompted;
+- jumping to Ayat al‑Kursi mid‑ayah: «انتقال».
+
+**Limits.**
+- It hasn't been tried on the watch yet. Recognition takes a moment, so a correction appears
+  a few seconds after the words.
+- A mosque's echo and other voices may make it less sure, which makes it stay quiet rather
+  than guess.
+- It uses a lot of processing power, so expect faster battery use while it runs.
+
 ## Where the text comes from
 
 None of the Arabic text was typed by hand. `tools/build_content.py` copies it word for word
@@ -222,6 +263,15 @@ app/src/main/res/font/amiri.ttf  Arabic font
 app/src/main/res/raw/chime.wav   Sample sound
 app/src/test/                    Unit tests (./gradlew testDebugUnitTest)
 .github/workflows/build.yml      Builds the APK on GitHub
+app/src/main/java/com/whatchapp/hourlybuzz/recite/
+  QuranIndex.kt          The whole Quran as a word list + phrase index
+  ArabicText.kt          Uthmani vs plain spelling comparison
+  Aligner.kt             Lines up heard words with the mushaf
+  RecitationTracker.kt   Follows the recitation; decides what is a mistake
+  Segmenter.kt           Cuts the mic stream into phrases at pauses
+  WhisperLib.kt          whisper.cpp bridge (app/src/main/cpp)
+  ReciterPipeline.kt     mic → phrases → recognition → tracker
+  CorrectionActivity.kt  The correction screen
 app/src/main/java/com/whatchapp/hourlybuzz/prayer/
   PrayerActivity.kt      Pick the prayer; live count; bezel correction
   CalibrationActivity.kt One-time posture calibration

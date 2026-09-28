@@ -14,6 +14,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      # The Quran speech model (prepared by model.yml) goes into the app.
+      - name: Speech model
+        run: |
+          git fetch --depth 1 origin model:refs/remotes/origin/model
+          git show origin/model:ggml-quran-base-q5_1.bin > app/src/main/assets/ggml-quran.bin
+          ls -la app/src/main/assets
 
       - uses: actions/setup-java@v4
         with:
@@ -22,7 +31,20 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v4
 
-      - name: Unit tests
+      # Build the speech engine for this machine so the recitation checker can be
+      # tested with real recitation audio (clips on the 'model' branch).
+      - name: Prepare recitation test
+        run: |
+          mkdir -p e2e && git archive origin/model | tar -x -C e2e
+          mv e2e/ggml-quran-base-q5_1.bin e2e/model.bin
+          cmake -S app/src/main/cpp -B e2e/build -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_C_FLAGS="-I$JAVA_HOME/include -I$JAVA_HOME/include/linux"
+          cmake --build e2e/build -j 4
+          cp e2e/build/libhourlybuzz_whisper.so e2e/
+
+      - name: Unit tests (including real-audio recitation test)
+        env:
+          RECITE_E2E: ${{ github.workspace }}/e2e
         run: ./gradlew --no-daemon testDebugUnitTest
 
       - name: Build APK

@@ -51,4 +51,16 @@
     <string name="calib_done">تمت المعايرة ✓</string>
     <string name="calib_failed">لم تنجح المعايرة، أعد المحاولة</string>
     <string name="calib_ok">تم</string>
+    <string name="recite_channel">Recitation corrections</string>
+    <string name="recite_toggle">تصحيح القراءة</string>
+    <string name="recite_only">التسميع فقط (بدون عدّ الركعات)</string>
+    <string name="recite_title">التسميع</string>
+    <string name="recite_loading">جارٍ تحميل نموذج القراءة…</string>
+    <string name="recite_failed">تعذّر تشغيل تصحيح القراءة</string>
+    <string name="recite_listening">يستمع…</string>
+    <string name="mistake_wrong_word">خطأ في كلمة</string>
+    <string name="mistake_skipped">سقط من القراءة</string>
+    <string name="mistake_wrong_place">انتقال إلى موضع آخر</string>
+    <string name="mistake_forgot">تذكير: التكملة</string>
+    <string name="mistake_heard">سُمِع: %1$s</string>
 </resources>

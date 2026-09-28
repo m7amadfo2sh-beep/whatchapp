@@ -139,6 +139,8 @@ MAX_VERSE_CHARS = 700
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, "app", "src", "main", "assets", "content.json")
+QURAN_OUT = os.path.join(ROOT, "app", "src", "main", "assets", "quran.txt")
+SURAHS_OUT = os.path.join(ROOT, "app", "src", "main", "assets", "quran_surahs.txt")
 ARABIC_DIGITS = str.maketrans("0123456789", "٠١٢٣٤٥٦٧٨٩")
 
 
@@ -300,6 +302,17 @@ def main():
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     with open(OUT, "w", encoding="utf-8") as f:
         json.dump(content, f, ensure_ascii=False, indent=1)
+
+    # The whole Quran for the recitation checker: one ayah per line, "surah|ayah|text",
+    # and surah names in quran_surahs.txt ("number|name").
+    with open(QURAN_OUT, "w", encoding="utf-8") as f:
+        for chapter in quran:
+            for v in chapter["verses"]:
+                f.write(f"{chapter['id']}|{v['id']}|{v['text']}\n")
+    with open(SURAHS_OUT, "w", encoding="utf-8") as f:
+        for chapter in quran:
+            f.write(f"{chapter['id']}|{chapter['name']}\n")
+    print(f"quran: {sum(len(c['verses']) for c in quran)} ayat -> {os.path.relpath(QURAN_OUT, ROOT)}")
 
     print(f"dhikr: {len(dhikr)}")
     for pool, cards in content["duas"].items():

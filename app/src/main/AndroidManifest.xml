@@ -71,6 +71,16 @@
             android:exported="false"
             android:theme="@style/FullScreenTheme" />
 
+        <activity
+            android:name=".recite.CorrectionActivity"
+            android:excludeFromRecents="true"
+            android:exported="false"
+            android:launchMode="singleTask"
+            android:showWhenLocked="true"
+            android:taskAffinity="com.whatchapp.hourlybuzz.correction"
+            android:theme="@style/FullScreenTheme"
+            android:turnScreenOn="true" />
+
         <service
             android:name=".prayer.PrayerService"
             android:exported="false"

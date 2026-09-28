@@ -16,3 +16,11 @@ verbatim, without changes, in a non-commercial app.
 **Amiri** by Khaled Hosny — https://www.amirifont.org — licensed under the
 [SIL Open Font License 1.1](https://openfontlicense.org). Bundled unmodified
 (`app/src/main/res/font/amiri.ttf`, from the Google Fonts build).
+
+## Speech model and engine
+- **whisper-base-ar-quran** by Tarteel AI — https://huggingface.co/tarteel-ai/whisper-base-ar-quran —
+  Apache License 2.0. Converted to whisper.cpp format and quantized (q5_1) by
+  `.github/workflows/model.yml`; bundled in the APK at build time.
+- **whisper.cpp** by Georgi Gerganov and contributors — https://github.com/ggerganov/whisper.cpp —
+  MIT License (git submodule `app/src/main/cpp/whisper.cpp`, v1.7.6).
+- Test recordings (not shipped in the app): Mishary Rashid Alafasy via https://everyayah.com.
