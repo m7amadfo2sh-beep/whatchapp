@@ -18,7 +18,8 @@ class ContentTest {
         assertEquals(Pool.GENERAL, Content.poolFor(12, 12))
         assertEquals(Pool.EVENING, Content.poolFor(16, 16))
         assertEquals(Pool.EVENING, Content.poolFor(20, 20))
-        assertEquals(Pool.GENERAL, Content.poolFor(22, 22))
+        assertEquals(Pool.NIGHT, Content.poolFor(22, 22))
+        assertEquals(Pool.GENERAL, Content.poolFor(2, 2))
         assertEquals(Pool.GENERAL, Content.poolFor(0, 0))
     }
 

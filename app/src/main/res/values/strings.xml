@@ -22,6 +22,15 @@
     <string name="prayer_isha">العشاء</string>
     <string name="prayer_jumuah">الجمعة</string>
     <string name="prayer_witr">الوتر</string>
+    <string name="prayer_shaf">الشفع</string>
+    <string name="prayer_sunnah">السنة الراتبة</string>
+    <string name="prayer_duha">الضحى</string>
+    <string name="prayer_qiyam">قيام الليل</string>
+    <string name="prayer_taraweeh">التراويح</string>
+    <string name="prayer_eid">العيد</string>
+    <string name="prayer_istisqa">الاستسقاء</string>
+    <string name="prayer_tahiyya">تحية المسجد</string>
+    <string name="prayer_istikhara">الاستخارة</string>
     <string name="prayer_other">أخرى</string>
     <string name="prayer_start">ابدأ</string>
     <string name="prayer_end">إنهاء</string>

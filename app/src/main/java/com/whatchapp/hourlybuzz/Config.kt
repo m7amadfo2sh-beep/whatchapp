@@ -54,9 +54,10 @@ object Config {
     /** Save a sensor log of each prayer (Android/data/<package>/files/prayer_logs) to help tune the counter. */
     const val PRAYER_LOG = true
 
-    /** Hours (0-23) that show أذكار الصباح / أذكار المساء instead of general duas. */
+    /** Hours (0-23) that show أذكار الصباح / المساء / النوم instead of general duas. */
     val MORNING_HOURS = 5..11
     val EVENING_HOURS = 16..20
+    val NIGHT_HOURS = 21..23
 
     /**
      * What happens for each kind of alert. Each field is handled by an

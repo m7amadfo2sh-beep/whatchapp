@@ -13,7 +13,7 @@ class Card(
 )
 
 /** The card collections, each with its own place in the rotation. */
-enum class Pool { MORNING, EVENING, GENERAL, VERSES }
+enum class Pool { MORNING, EVENING, NIGHT, GENERAL, VERSES }
 
 /**
  * The dhikr, duas and verses from assets/content.json (built from verified
@@ -23,12 +23,13 @@ object Content {
 
     /**
      * Which collection a card slot uses: odd slots (odd hours) are Quran verses,
-     * even ones are duas: morning/evening adhkar in those hours, otherwise general.
+     * even ones are duas: morning/evening/night adhkar in those hours, otherwise general.
      */
     fun poolFor(slot: Long, hour: Int): Pool = when {
         slot % 2 == 1L -> Pool.VERSES
         hour in Config.MORNING_HOURS -> Pool.MORNING
         hour in Config.EVENING_HOURS -> Pool.EVENING
+        hour in Config.NIGHT_HOURS -> Pool.NIGHT
         else -> Pool.GENERAL
     }
 
@@ -59,6 +60,7 @@ object Content {
             mapOf(
                 Pool.MORNING to cards(duas.getJSONArray("morning"), false),
                 Pool.EVENING to cards(duas.getJSONArray("evening"), false),
+                Pool.NIGHT to cards(duas.optJSONArray("night") ?: JSONArray(), false),
                 Pool.GENERAL to cards(duas.getJSONArray("general"), false),
                 Pool.VERSES to cards(json.getJSONArray("verses"), true),
             ),

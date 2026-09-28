@@ -18,10 +18,11 @@ newer, Pixel Watch, …). It:
   | :10, :15 … :55 | Buzz only |
 
   The cards:
-  - odd hours: a Quran verse (36 well‑known verses and Quranic duas: آية الكرسي, الإخلاص,
-    المعوذتين, الفاتحة, …)
-  - even hours: أذكار الصباح (05:00–11:59), أذكار المساء (16:00–20:59), other hours general
-    duas and adhkar from Hisn al‑Muslim (146 in total)
+  - odd hours: a Quran card (99: about 50 Quranic duas «ربنا…/رب…» and about 50 well‑known
+    verses and short surahs: الفاتحة, آية الكرسي, خواتيم البقرة, الإخلاص, المعوذتين, الضحى, الشرح,
+    القدر, العصر, …)
+  - even hours: أذكار الصباح والاستيقاظ (05:00–11:59), أذكار المساء (16:00–20:59), أذكار النوم
+    (22:00), other hours general duas and adhkar from Hisn al‑Muslim (227 in total)
 
   Each collection goes in order and starts again at the end, so everything is shown before
   anything repeats.
@@ -45,7 +46,9 @@ how many rak'ahs are **left after the current one**:
 2. The first time, the app asks for a **one-time calibration (~40 s)**. Stand, bow, prostrate
    and sit when told. One buzz means "hold still"; two buzzes mean "done". This teaches the
    watch *your* postures (which wrist, how you hold your hands).
-3. Pick the prayer: الفجر، الظهر، العصر، المغرب، العشاء، الجمعة، الوتر, or «أخرى» (1–10).
+3. Pick the prayer: الفجر، الظهر، العصر، المغرب، العشاء، الجمعة، الوتر، الشفع، السنة الراتبة،
+   الضحى، قيام الليل، التراويح، العيد، الاستسقاء، تحية المسجد، الاستخارة, or «أخرى» (1–10).
+   Kusuf (two rukus per rak'ah) and Janazah (no ruku/sujood) can't be counted.
 4. Pray normally. The screen can be off.
    - **Shake:** two quick wrist twists (back‑forth‑back).
    - **Wrong count:** turn the bezel on the prayer screen to correct it (±1, one tick).

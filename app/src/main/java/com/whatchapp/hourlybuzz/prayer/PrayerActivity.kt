@@ -208,6 +208,16 @@ class PrayerActivity : Activity(), ActionHost {
             R.string.prayer_jumuah to 2,
             R.string.prayer_witr to 1,
             R.string.prayer_witr to 3,
+            R.string.prayer_shaf to 2,
+            R.string.prayer_sunnah to 2,
+            R.string.prayer_sunnah to 4,
+            R.string.prayer_duha to 2,
+            R.string.prayer_qiyam to 2,
+            R.string.prayer_taraweeh to 2,
+            R.string.prayer_eid to 2,
+            R.string.prayer_istisqa to 2,
+            R.string.prayer_tahiyya to 2,
+            R.string.prayer_istikhara to 2,
         )
     }
 }
